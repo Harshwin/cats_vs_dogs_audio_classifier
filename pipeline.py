@@ -94,13 +94,15 @@ class Pipeline:
         parser: ArgumentParser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument("-T", "--train", help="train models", action="store_true")
         parser.add_argument("-p", "-predict", help="generate predictions", action="store_true")
-        args: Namespace = parser.parse_args(args=arguments)   
+        args: Namespace = parser.parse_args(args=arguments)
         try:
             if args.train:
                 # load data
                 cats_wave_list, cats_sr, _, dogs_wave_list, _, _ = self.load_data(self.DATA_DIR)
                 X_train, X_test, Y_train, Y_test = split_data(cats_wave_list, dogs_wave_list, test_size_ratio=0.3)
                 X_train_features = extract_features(X_train, cats_sr)
+                X_test_features = extract_features(X_test, cats_sr)
+                
 
 
             if args.predict:
