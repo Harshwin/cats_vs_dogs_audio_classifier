@@ -22,7 +22,7 @@ def simple_nn(X_train_features, X_test_features, y_train, y_test):
     best_model_weights = './base.model'
     checkpoint = ModelCheckpoint(
         best_model_weights,
-        monitor='val_acc',
+        monitor='val_accuracy',
         verbose=1,
         save_best_only=True,
         mode='min',
@@ -38,8 +38,8 @@ def simple_nn(X_train_features, X_test_features, y_train, y_test):
     history = model.fit(
         X_train_features,
         train_labels,
-        validation_data=(X_test_features, test_labels),
-        epochs=200,
+        validation_split=0.2,
+        epochs=2,
         verbose=1,
         callbacks=callbacks,
     )
@@ -47,9 +47,6 @@ def simple_nn(X_train_features, X_test_features, y_train, y_test):
     # Save the model
     model.save_weights('results/model_wieghts.h5')
     model.save('results/model_keras.h5')
-
-    # list all data in history
-    print(history.history.keys())
 
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
@@ -60,10 +57,9 @@ def simple_nn(X_train_features, X_test_features, y_train, y_test):
     plt.plot(epochs, val_acc, 'r', label = "validation accuracy")
     plt.title('Training and validation accuracy')
     plt.legend()
-
-    plt.show()
-
     plt.savefig('results/learning_curve.png')
+    plt.show()
+    return model
 
 
 

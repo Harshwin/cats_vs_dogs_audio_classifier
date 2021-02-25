@@ -12,6 +12,9 @@ import argparse
 import glob
 import os
 import sys
+
+import dill as dill
+import numpy as np
 from argparse import ArgumentParser
 from argparse import Namespace
 from datetime import datetime, timedelta
@@ -37,18 +40,33 @@ from typing import Optional
 
 
 import tensorflow as tf
+from sklearn.metrics import accuracy_score, roc_auc_score
 from tensorflow.keras.models import load_model
 
+import random
+from model_generator.model_list import simple_nn
 from utilities.feature_extract import extract_features
 from utilities.preprocessing import split_data
 
-tf.compat.v1.disable_eager_execution()
+# tf.compat.v1.disable_eager_execution()
 
 
 class Pipeline:
     # path for audio files directory:
     DATA_DIR = 'data/cats_dogs/'
+    MODEL_PATH = 'results/model_keras.h5'
 
+    def reset_random_seeds():
+        '''
+        This function is to set seed so that we get reproducible results
+        '''
+        os.environ['PYTHONHASHSEED'] = str(1)
+        tf.random.set_seed(1)
+        np.random.seed(1)
+        random.seed(1)
+
+    # make some random data
+    reset_random_seeds()
     def load_data(self, data_path: str, sr: Union[int, None] = None) -> Tuple[list, int, list, list, int, list]:
         '''
         This function loads data from the audio files and returns a list of audio files, sampling rate of each file,
@@ -93,20 +111,27 @@ class Pipeline:
 
         parser: ArgumentParser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument("-T", "--train", help="train models", action="store_true")
-        parser.add_argument("-p", "-predict", help="generate predictions", action="store_true")
+        parser.add_argument("-p", "--predict", help="generate predictions", action="store_true")
         args: Namespace = parser.parse_args(args=arguments)
+
+        model = None
         try:
             if args.train:
                 # load data
                 cats_wave_list, cats_sr, _, dogs_wave_list, _, _ = self.load_data(self.DATA_DIR)
-                X_train, X_test, Y_train, Y_test = split_data(cats_wave_list, dogs_wave_list, test_size_ratio=0.3)
+                X_train, X_test, Y_train, Y_test = split_data(cats_wave_list, dogs_wave_list, test_size_ratio=0.1)
                 X_train_features = extract_features(X_train, cats_sr)
                 X_test_features = extract_features(X_test, cats_sr)
-                
+                model = simple_nn(X_train_features, X_test_features, Y_train, Y_test )
 
+                pred = [(model.predict(data.reshape(1, 41, ))[0][0] > 0.5).astype("int32") for data in X_test_features]
+                print(" Test accuracy :", accuracy_score(Y_test, pred))
+                print(" Test accuracy roc_auc :", roc_auc_score(Y_test, pred))
 
             if args.predict:
-                pass
+                if not model:
+                    model = dill.load(self.MODEL_PATH)
+                    print(" HERE in PREDICT STAGE")
 
         except BaseException as e:
             raise e
