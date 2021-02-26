@@ -5,6 +5,7 @@ import numpy as np
 
 # function to extract all the features needed for the classification
 def extract_features(audio_samples, sample_rate):
+    print(" Extracting features ..... ")
     extracted_features = np.empty((0, 41,))
     if not isinstance(audio_samples, list):
         audio_samples = [audio_samples]

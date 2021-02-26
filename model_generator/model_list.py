@@ -49,13 +49,14 @@ def simple_nn(X_train_features, y_train, model_path):
         X_train_features,
         train_labels,
         validation_split=0.2,
-        epochs=2,
+        epochs=200,
         verbose=1,
         callbacks=callbacks,
     )
 
     # Save the model
-    model.save_weights('results/model_wieghts.h5')
+    print(f"saving models to {model_path}")
+    model.save_weights(model_path)
     model.save('results/model_keras.h5')
 
     acc = history.history['accuracy']
@@ -63,6 +64,7 @@ def simple_nn(X_train_features, y_train, model_path):
 
     epochs = range(1, len(acc)+1)
 
+    print("plotting learning curve")
     plt.plot(epochs, acc, 'b', label = "training accuracy")
     plt.plot(epochs, val_acc, 'r', label = "validation accuracy")
     plt.title('Training and validation accuracy')
@@ -70,6 +72,7 @@ def simple_nn(X_train_features, y_train, model_path):
     plt.savefig('results/learning_curve.png')
     plt.show()
 
+    print("packagine the model to combine preprocessing and predict for mlflow serving")
     ## Package the model
     # Location in our gdrive where we want the model to be saved
     model_path = f"results/model_package"

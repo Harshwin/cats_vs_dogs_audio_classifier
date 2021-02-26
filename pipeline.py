@@ -111,6 +111,7 @@ class Pipeline:
         try:
             if args.train:
                 # load data
+                print(" Loading data .....")
                 cats_wave_list, cats_sr, _, dogs_wave_list, _, _ = self.load_data(self.DATA_DIR)
                 X_train, X_test, Y_train, Y_test = split_data(cats_wave_list, dogs_wave_list, test_size_ratio=0.1)
                 X_train_features = extract_features(X_train, cats_sr)
@@ -125,6 +126,7 @@ class Pipeline:
 
 
                 if not model:
+                    print(" loading model for prediction ")
                     model = models.load_model(self.MODEL_PATH)
 
                 app = Flask(__name__)
