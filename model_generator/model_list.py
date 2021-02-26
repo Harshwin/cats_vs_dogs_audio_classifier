@@ -1,17 +1,27 @@
+import os
+import pickle
+
+import mlflow
 from keras import layers
 from keras import models
 from keras import optimizers
 from keras import losses
 from keras.callbacks import ModelCheckpoint,EarlyStopping
 from keras.utils import to_categorical
+import tensorflow as tf
 
 import matplotlib.pyplot as plt
 
+from model_generator.utils import delete_file_if_exists
+from model_generator.wrapping import ModelWrapper
+from utilities.preprocessing import preprocess
 
-def simple_nn(X_train_features, X_test_features, y_train, y_test):
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
+
+def simple_nn(X_train_features, y_train, model_path):
     # Convert the labels to match what our model will expect
     train_labels = to_categorical(y_train)
-    test_labels = to_categorical(y_test)
     model = models.Sequential()
     model.add(layers.Dense(64, activation='relu', input_shape=(41,)))
     model.add(layers.Dense(32, activation='relu'))
@@ -59,6 +69,22 @@ def simple_nn(X_train_features, X_test_features, y_train, y_test):
     plt.legend()
     plt.savefig('results/learning_curve.png')
     plt.show()
+
+    ## Package the model
+    # Location in our gdrive where we want the model to be saved
+    model_path = f"results/model_package"
+    delete_file_if_exists(model_path)
+
+    data_path = 'data/cats_dogs'
+    # # Package the model!
+    preprocess_model = ModelWrapper(model=model, preprocess=preprocess)
+    # Todo: getting error in below line - TypeError: can't pickle tensorflow.python._tf_stack.StackSummary objects
+    # mlflow.pyfunc.save_model(path=model_path,
+    #                          python_model=preprocess_model)
+
+    # Todo: TypeError: can't pickle _thread.RLock objects
+    # with open('results/preprocess_model.pickle', 'wb') as f:
+    #     pickle.dump(preprocess_model, f)
     return model
 
 

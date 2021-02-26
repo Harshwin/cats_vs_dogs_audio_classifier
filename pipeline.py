@@ -3,9 +3,7 @@
 This pipeline loads the data, extract features, trains the model and predicts
 The pipeline has the following stages:
 
-
-Intermediate results are saved to ``tmp`` and final results
-are saved to ``target``
+results are saved to ``results`` directory
 
 """
 import argparse
@@ -14,39 +12,32 @@ import os
 import sys
 
 import dill as dill
+import mlflow
 import numpy as np
 from argparse import ArgumentParser
 from argparse import Namespace
-from datetime import datetime, timedelta
 import traceback
-
-# import dill
-
-from pathlib import Path
 
 import audioread
 import librosa
-import pandas as pd
-from pandas import Series
-from pandas import DataFrame
 
-from typing import Any
-from typing import Dict
 from typing import List
 from typing import Tuple
 from typing import Union
-from typing import Optional
 
+from flask import Flask, request
 
 
 import tensorflow as tf
+from keras import models
 from sklearn.metrics import accuracy_score, roc_auc_score
 from tensorflow.keras.models import load_model
 
 import random
 from model_generator.model_list import simple_nn
 from utilities.feature_extract import extract_features
-from utilities.preprocessing import split_data
+from utilities.preprocessing import split_data, preprocess, preprocess_single_audio
+
 
 # tf.compat.v1.disable_eager_execution()
 
@@ -111,7 +102,9 @@ class Pipeline:
 
         parser: ArgumentParser = argparse.ArgumentParser(description=__doc__)
         parser.add_argument("-T", "--train", help="train models", action="store_true")
-        parser.add_argument("-p", "--predict", help="generate predictions", action="store_true")
+        parser.add_argument("-P", "--predict", help="generate predictions", action="store_true")
+        parser.add_argument("-D", "--deploy", help="deploy as mlflow serving", action="store_true")
+
         args: Namespace = parser.parse_args(args=arguments)
 
         model = None
@@ -122,17 +115,33 @@ class Pipeline:
                 X_train, X_test, Y_train, Y_test = split_data(cats_wave_list, dogs_wave_list, test_size_ratio=0.1)
                 X_train_features = extract_features(X_train, cats_sr)
                 X_test_features = extract_features(X_test, cats_sr)
-                model = simple_nn(X_train_features, X_test_features, Y_train, Y_test )
+                model = simple_nn(X_train_features, Y_train, self.MODEL_PATH)
 
                 pred = [(model.predict(data.reshape(1, 41, ))[0][0] > 0.5).astype("int32") for data in X_test_features]
                 print(" Test accuracy :", accuracy_score(Y_test, pred))
                 print(" Test accuracy roc_auc :", roc_auc_score(Y_test, pred))
 
             if args.predict:
-                if not model:
-                    model = dill.load(self.MODEL_PATH)
-                    print(" HERE in PREDICT STAGE")
 
+
+                if not model:
+                    model = models.load_model(self.MODEL_PATH)
+
+                app = Flask(__name__)
+
+
+                @app.route('/')
+                def welcome():
+                    return "Check if the audio file is a dog or a cat"
+
+                @app.route('/predict', methods=["POST"])
+                def predict():
+                    test_data_path = request.files.get("audio file")
+                    feature = preprocess_single_audio(test_data_path)
+                    pred = model.predict(feature.reshape(1, 41, ))
+                    return "Model predicted as Cat: {} Dog: {}".format(pred[0][0], pred[0][1])
+
+                app.run()
         except BaseException as e:
             raise e
 
