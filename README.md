@@ -5,8 +5,10 @@ I was not able to complete the MLFLow deployment process as I faced issues when 
 To run the code, 
 1. Please Install docker
 2. run the below from inside the cats_vs_dogs directory. Make sure you see the "Dockerfile"
-   *  Build docker image, this may take a while
-   >docker build -t audio_classifier:latest .
+   * [ you can skip this step if you want ]  Build docker image, this may take a while
+   > docker build -t audio_classifier:latest .
+   * [Do this only if you skipped above step ] I have the image I built on docker hub, so you can use that to save time.
+   > docker pull harshven/audio_processing
    * Initialize and run container 
    >docker run -it -p 5500:8888 audio_classifier
    * After the run completes, you will see a link, which we can use as an API to make request ![img.png](img/img.png)
