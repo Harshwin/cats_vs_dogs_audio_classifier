@@ -139,6 +139,9 @@ class Pipeline:
                     pred = model.predict(feature.reshape(1, 41, ))
                     return "Model predicted as Cat: {} Dog: {}".format(pred[0][0], pred[0][1])
 
+                # remove host when running pipeline without docker
+                # port = int(os.environ.get('PORT', 8888))
+                # app.run(host='172.17.0.2', port=port)
                 app.run()
         except BaseException as e:
             raise e

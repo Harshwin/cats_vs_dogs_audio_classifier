@@ -1,18 +1,18 @@
-argparse
+argparse==1.1
 
-numpy
-pandas
+numpy==1.19.5
+pandas==1.0.5
 sklearn
-matplotlib
+matplotlib==3.3.4
 
 statistics
-scipy
-h5py
+scipy==1.4.1
+h5py==2.10.0
 
-librosa
-audioread
+librosa==0.8.0
+audioread==2.1.9
 
-dill
-keras
-tensorflow==2.2
-mlflow
+dill==0.3.3
+keras==2.4.3
+tensorflow==2.2.0
+mlflow==1.14.0
