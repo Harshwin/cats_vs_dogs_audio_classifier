@@ -12,5 +12,7 @@ h5py
 librosa
 audioread
 
+dill
 keras
-tensorflow
+tensorflow==2.2
+mlflow
