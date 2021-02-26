@@ -1,14 +1,10 @@
 import os
-import pickle
 
-import mlflow
 from keras import layers
 from keras import models
-from keras import optimizers
 from keras import losses
 from keras.callbacks import ModelCheckpoint,EarlyStopping
 from keras.utils import to_categorical
-import tensorflow as tf
 
 import matplotlib.pyplot as plt
 

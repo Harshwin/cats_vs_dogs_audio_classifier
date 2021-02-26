@@ -11,12 +11,9 @@ import glob
 import os
 import sys
 
-import dill as dill
-import mlflow
 import numpy as np
 from argparse import ArgumentParser
 from argparse import Namespace
-import traceback
 
 import audioread
 import librosa
@@ -31,12 +28,11 @@ from flask import Flask, request
 import tensorflow as tf
 from keras import models
 from sklearn.metrics import accuracy_score, roc_auc_score
-from tensorflow.keras.models import load_model
 
 import random
 from model_generator.model_list import simple_nn
 from utilities.feature_extract import extract_features
-from utilities.preprocessing import split_data, preprocess, preprocess_single_audio
+from utilities.preprocessing import split_data, preprocess_single_audio
 
 
 # tf.compat.v1.disable_eager_execution()
@@ -116,6 +112,8 @@ class Pipeline:
                 X_train, X_test, Y_train, Y_test = split_data(cats_wave_list, dogs_wave_list, test_size_ratio=0.1)
                 X_train_features = extract_features(X_train, cats_sr)
                 X_test_features = extract_features(X_test, cats_sr)
+                print(f"shape of training input: {len(X_train)}")
+                print(f"shape of test data: {len(X_test)}")
                 model = simple_nn(X_train_features, Y_train, self.MODEL_PATH)
 
                 pred = [(model.predict(data.reshape(1, 41, ))[0][0] > 0.5).astype("int32") for data in X_test_features]
@@ -123,8 +121,6 @@ class Pipeline:
                 print(" Test accuracy roc_auc :", roc_auc_score(Y_test, pred))
 
             if args.predict:
-
-
                 if not model:
                     print(" loading model for prediction ")
                     model = models.load_model(self.MODEL_PATH)
