@@ -14,7 +14,7 @@ To run the code,
    * After the run completes, you will see a link, which we can use as an API to make request ![img.png](img/img.png)
 
 3. You can either use "curl" or postman to test this, I am going to show using postman. 
-    * Please open "Posetman" if you have.
+    * Please open "Postman" if you have.
     * enter "http://127.0.0.1:5000/predict?"  in "request url" tab
     * Make sure it's a "POST" request in drop down. 
     * Under "Body", select file in "Key" column and in value section choose a audio file with cat or dog.
